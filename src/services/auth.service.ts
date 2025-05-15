@@ -9,15 +9,23 @@ import { comparePassword } from '../utils/hash.util';
 import jwt from 'jsonwebtoken';
 import AppError from '../errors/AppError';
 
-// Overloading
-export function loginUser(payload: IEmailPassword): Promise<UserTokenType>;
-export function loginUser(payload: IUsernamePassword): Promise<UserTokenType>;
+// // Overloading dengan function
+// export function loginUser(payload: IEmailPassword): Promise<UserTokenType>;
+// export function loginUser(payload: IUsernamePassword): Promise<UserTokenType>;
 
-export async function loginUser(
-  payload: IEmailPassword | IUsernamePassword,
-): Promise<UserTokenType> {
+// export async function loginUser(
+//   payload: IEmailPassword | IUsernamePassword,
+// ): Promise<UserTokenType> {
+//   let user;
+
+// Overloading dengan arrow function
+export const loginUser: {
+  (payload: IEmailPassword): Promise<UserTokenType>;
+  (payload: IUsernamePassword): Promise<UserTokenType>;
+} = async (
+  payload: IEmailPassword | IUsernamePassword
+): Promise<UserTokenType> => {
   let user;
-
   if ('email' in payload) {
     user = await prisma.user.findUnique({
       where: {
