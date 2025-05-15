@@ -7,17 +7,15 @@ import {
 } from '../types/user.type';
 import { comparePassword } from '../utils/hash.util';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import AppError from '../errors/AppError';
 
-dotenv.config();
+// Overloading
+export function loginUser(payload: IEmailPassword): Promise<UserTokenType>;
+export function loginUser(payload: IUsernamePassword): Promise<UserTokenType>;
 
-export const loginUser: {
-  // implementasi overloading
-  (payload: IEmailPassword): Promise<UserTokenType>;
-  (payload: IUsernamePassword): Promise<UserTokenType>;
-} = async (
+export async function loginUser(
   payload: IEmailPassword | IUsernamePassword,
-): Promise<UserTokenType> => {
+): Promise<UserTokenType> {
   let user;
 
   if ('email' in payload) {
@@ -27,7 +25,7 @@ export const loginUser: {
       },
     });
   } else if ('username' in payload) {
-    user = await prisma.user.findFirstOrThrow({
+    user = await prisma.user.findFirst({
       where: {
         name: payload.username,
       },
@@ -35,7 +33,7 @@ export const loginUser: {
   }
 
   if (!user) {
-    throw new Error('User not found');
+    throw new AppError('User not found', 404);
   }
 
   const isMatch = await comparePassword(payload.password, user.password);
